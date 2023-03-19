@@ -1,45 +1,26 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-orbs:
-  docker: circleci/docker@1.5.0
+
+# Define a job to be invoked later in a workflow.
+# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
 jobs:
-  build_test:
+  say-hello:
+    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
+    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
     docker:
-      - image: circleci/python:3.9 
+      - image: cimg/base:stable
+    # Add steps to the job
+    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
     steps:
       - checkout
       - run:
-          name: Install Python Dependencies
-          command: |
-            pip install --user --no-cache-dir -r requirements.txt
-      - run:
-          name: Run Tests
-          command: ~/.local/bin/pytest
-  build_push_docker_image:
-    docker:
-      - image: circleci/python:3.9
-    steps:
-      - checkout
-      - run:
-          name: Build app binary 
-          command: |
-            pip install --user --no-cache-dir -r requirements.txt          
-            ~/.local/bin/pyinstaller -F hello_world.py
-      - setup_remote_docker
-      - docker/check
-      - docker/build:
-          image: $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME
-          extra_build_args: "-t $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME"
-          tag: 0.1.<< pipeline.number >>             
-      - docker/push:
-          image: $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME
-          tag: "latest"
-      - docker/push:
-          image: $DOCKER_LOGIN/$CIRCLE_PROJECT_REPONAME
-          tag: "0.1.<< pipeline.number >>"
+          name: "Say hello"
+          command: "echo Hello, World!"
+
+# Invoke jobs via workflows
+# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
 workflows:
-  test_build_deploy:
+  say-hello-workflow:
     jobs:
-      - build_test
-      - build_push_docker_image:
-          requires:
-            - build_test
+      - say-hello
